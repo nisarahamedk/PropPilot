@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-PropPilot is an AI-powered proposal creation system designed for businesses. It aims to streamline the proposal generation process by leveraging AI agents for requirement extraction, content generation, design, compliance validation, and editing.
+PropPilot, an AI co-pilot for your proposal generation processes................. It aims to streamline the proposal generation process by leveraging AI agents for requirement extraction, content generation, design, compliance validation, and editing.
 
 ## Architecture
 
