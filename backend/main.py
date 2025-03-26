@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
 import os
-import pinecone as pinecone_lib
+import pinecone
 import chromadb
 
 app = FastAPI()
@@ -12,7 +12,7 @@ if VECTOR_DB == "pinecone":
     # Initialize Pinecone
     PINECONE_API_KEY = os.environ.get("PINECONE_API_KEY")
     PINECONE_ENVIRONMENT = os.environ.get("PINECONE_ENVIRONMENT")
-    pc = pinecone_lib.Pinecone(api_key=PINECONE_API_KEY)
+    pc = pinecone.Pinecone(api_key=PINECONE_API_KEY)
     index_name = "propilot-index"  # Replace with your index name
     if index_name not in pc.list_indexes().names:
         pc.create_index(name=index_name, dimension=1536, metric="cosine")  # Adjust dimension as needed

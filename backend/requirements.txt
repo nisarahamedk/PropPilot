@@ -1,8 +1,4 @@
 fastapi
 uvicorn
-litellm
-smolagents
 pinecone
 chromadb
-auth0-python
-websockets
