@@ -1,6 +1,10 @@
-# PropPilot
+<a name="readme-top"></a>
 
-## Project Overview
+<div align="center">
+  <img src="./docs/static/img/logo.png" alt="Logo" width="200">
+  <h1 align="center">PropPilot: Your AI Co-Pilot for Winning Proposals</h1>
+</div>
+
 
 PropPilot, an AI co-pilot for your proposal generation processes, transforming ideas into persuasive narratives and unlocking new opportunities. It aims to streamline the proposal generation process by leveraging AI agents for requirement extraction, content generation, design, compliance validation, and editing.
 
