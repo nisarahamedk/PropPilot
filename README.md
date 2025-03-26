@@ -6,7 +6,7 @@
 </div>
 
 
-PropPilot is an AI-powered co-pilot specifically designed to help businesses, especially small and medium-sized enterprises (SMEs), respond to Requests for Proposals (RFPs) more efficiently and effectively. It streamlines the RFP response process by leveraging AI agents for automated requirement extraction, compliance-focused content generation, and proposal validation, ultimately increasing your chances of winning contracts.
+PropPilot is an AI-powered co-pilot specifically designed to help businesses, especially small and medium-sized enterprises (SMEs), respond to Requests for Proposals (RFPs) more efficiently and effectively. It features a conversational, command-free user interface driven by AI. It streamlines the RFP response process by leveraging AI agents for automated requirement extraction, compliance-focused content generation, and proposal validation, ultimately increasing your chances of winning contracts.
 
 ## Architecture
 
@@ -57,7 +57,7 @@ The system utilizes a family of conversation agents to automate various aspects 
 *   **Collaboration Workflows:** Facilitates collaboration among team members involved in the RFP response process.
 ## Technical Stack
 
-*   **Frontend:** React/Next.js
+*   **Frontend:** React/Next.js, Redux Toolkit, Material UI, Styled Components
 *   **Backend:** Python (FastAPI)
 *   **LLM:** LiteLLM
 *   **Vector Database:** Pinecone/Chroma
