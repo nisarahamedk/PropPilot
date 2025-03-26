@@ -1,0 +1,49 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller distribution
+/dist/
+/build/
+/tmp/
+
+# Unit test / coverage reports
+*.coverage
+.cache
+nosetests.xml
+coverage.xml
+*.log
+*.swp
+
+# Translations
+*.mo
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# JetBrains IDE
+.idea/
+
+# VS Code
+.vscode/
+
+# OS generated files #
+.DS_Store
+Thumbs.db
+
+#Chroma DB
+./chroma_db/
+chroma.sqlite3
