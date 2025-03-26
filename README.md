@@ -48,7 +48,7 @@ The system utilizes a family of conversation agents to automate various aspects 
 
 *   **Frontend:** React/Next.js
 *   **Backend:** Python (FastAPI)
-*   **LLM:** LiteLLM, smolagents, MCP
+*   **LLM:** LiteLLM
 *   **Vector Database:** Pinecone/Chroma
 *   **Authentication:** Auth0/Clerk
 *   **Real-time Infrastructure:** WebSockets
@@ -57,7 +57,7 @@ The system utilizes a family of conversation agents to automate various aspects 
 ## Setup Instructions
 
 1.  Clone the repository: `git clone <repository_url>`
-2.  Install the backend dependencies: `cd backend && pip install -r requirements.txt`
+2.  Install the backend dependencies: `cd backend && pip install -r requirements.txt` (Make sure to use `pinecone` instead of `pinecone-client`)
 3.  Configure the environment variables:
     *   `VECTOR_DB`: Choose between "pinecone" or "chroma" (default: "chroma")
     *   `PINECONE_API_KEY`: (Required if using Pinecone) Your Pinecone API key
