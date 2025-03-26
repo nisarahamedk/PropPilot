@@ -1,7 +1,7 @@
 <a name="readme-top"></a>
 
 <div align="center">
-  <img src="./docs/static/img/logo.jpeg" alt="Logo" width="200">
+  <img src="./docs/static/img/logo.png" alt="Logo" width="200">
   <h1 align="center">PropPilot: Your AI Co-Pilot for Winning Proposals</h1>
 </div>
 
