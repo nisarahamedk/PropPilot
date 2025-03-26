@@ -89,7 +89,7 @@ The system can be deployed using Docker and Kubernetes. A `Dockerfile` is provid
 **Pending Tasks:**
 
 *   **Backend Core Development (Phase 1 - In Progress)**
-    *   [ ] Fully integrate and configure LiteLLM for content generation (requires resolving environment issues).
+    *   [ ] Fully integrate and configure LiteLLM for content generation, intent recognition, and dialogue management (requires resolving environment issues).
     *   [ ] Implement Auth0 authentication and authorization.
     *   [ ] Develop API endpoints for proposal creation, retrieval, and management.
     *   [ ] Implement WebSocket endpoint for real-time communication.
