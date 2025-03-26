@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-PropPilot, an AI co-pilot for your proposal generation processes, transforming ideas into persuasive narratives and unlocking new opportunities. It aims to streamline the proposal generation process by leveraging AI agents for requirement extraction, content generation, design, compliance validation, and editing.
+PropPilot is an AI-powered co-pilot specifically designed to help businesses, especially small and medium-sized enterprises (SMEs), respond to Requests for Proposals (RFPs) more efficiently and effectively. It streamlines the RFP response process by leveraging AI agents for automated requirement extraction, compliance-focused content generation, and proposal validation, ultimately increasing your chances of winning contracts.
 
 ## Architecture
 
@@ -44,6 +44,13 @@ The system utilizes a family of conversation agents to automate various aspects 
 *   **Granular Undo/Redo Functionality:** Provides fine-grained control over changes made to the proposal.
 *   **Persistent Context Management:** Maintains a consistent context throughout the proposal creation process.
 
+## Key Features for RFP Responses
+
+*   **Automated RFP Requirement Extraction:** Automatically extracts key requirements, evaluation criteria, and submission guidelines from RFP documents.
+*   **Compliance-Focused Content Generation:** Generates content that directly addresses RFP requirements and evaluation criteria, ensuring compliance.
+*   **Proposal Validation:** Validates the proposal against RFP requirements, identifying any gaps or inconsistencies.
+*   **RFP-Specific Templates:** Provides pre-built templates tailored to common RFP types and industries.
+*   **Collaboration Workflows:** Facilitates collaboration among team members involved in the RFP response process.
 ## Technical Stack
 
 *   **Frontend:** React/Next.js
@@ -83,11 +90,9 @@ The system can be deployed using Docker and Kubernetes. A `Dockerfile` is provid
     *   [ ] Develop API endpoints for proposal creation, retrieval, and management.
     *   [ ] Implement WebSocket endpoint for real-time communication.
 *   **Agent Workflow Implementation (Phase 2 - To Do)**
-    *   [ ] Develop the Requirement Extraction Agent.
-    *   [ ] Implement the Research & Content Generation Agent.
-    *   [ ] Create the Design & Layout Agent.
-    *   [ ] Develop the Compliance & Validation Agent.
-    *   [ ] Implement the Editing & Refinement Agent.
+    *   [ ] Develop the RFP Requirement Extraction Agent: Specialized in extracting requirements, evaluation criteria, and submission guidelines from RFP documents.
+    *   [ ] Implement the Compliance-Focused Content Generation Agent: Generates content that directly addresses RFP requirements and evaluation criteria.
+    *   [ ] Develop the Proposal Validation Agent: Validates the proposal against RFP requirements, identifying any gaps or inconsistencies.
 *   **Frontend Development (Phase 3 - To Do)**
     *   [ ] Develop the rich chat interface.
     *   [ ] Implement Markdown support and file upload capabilities.
