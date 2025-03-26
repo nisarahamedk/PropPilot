@@ -2,7 +2,7 @@
 
 <div align="center">
   <img src="./docs/static/img/logo.png" alt="Logo" width="200">
-  <h1 align="center">PropPilot: Your AI Co-Pilot for Winning Proposals</h1>
+  <h1 align="center">Your AI Co-Pilot for Winning Proposals</h1>
 </div>
 
 
