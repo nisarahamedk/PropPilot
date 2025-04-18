@@ -21,7 +21,7 @@ The system follows a modular architecture with distinct components for the front
 *   **Version History Tracking:** Maintains a history of proposal versions for easy rollback and auditing.
 *   **Inline Commenting/Suggestion System:** Facilitates feedback and collaboration through inline comments and suggestions.
 *   **Mobile-Responsive Design:** Ensures accessibility across various devices.
-*   **Technology:** React/Next.js (recommended)
+*   **Technology:** React/Next.js (recommended), `slidev` for proposal generation. 
 
 ### Backend
 
