@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth"; // Import AuthProvider
+import { SidebarLayout } from "@/components/shared/sidebar-layout";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,10 +21,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <AuthProvider> {/* Wrap with AuthProvider */}
           {/* TODO: Add ThemeProvider if shadcn/ui requires it at this level */}
-          {/* TODO: Add Header/Navbar component once created */}
-          <main className="min-h-screen bg-background font-sans antialiased">
+          <SidebarLayout>
             {children}
-          </main>
+          </SidebarLayout>
           {/* TODO: Add Footer component once created */}
         </AuthProvider>
       </body>
