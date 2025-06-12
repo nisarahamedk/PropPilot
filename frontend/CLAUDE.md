@@ -1,7 +1,7 @@
-# Claude Development Guidelines for Tutor AI Frontend
+# PropPilot Development Guidelines for Frontend
 
 ## Project Overview
-This is a modern Next.js 15 + React 19 application with TypeScript, integrated with a FastAPI backend. The frontend serves as an AI-powered tutoring platform with interactive learning components.
+This is a modern Next.js 15 + React 19 application with TypeScript, integrated with a FastAPI backend. The frontend serves as the user interface for PropPilot, featuring interactive components.
 
 ## Technology Stack
 - **Framework**: Next.js 15.3.3 with App Router
@@ -44,13 +44,13 @@ This is a modern Next.js 15 + React 19 application with TypeScript, integrated w
 frontend/
 ├── src/
 │   ├── app/                    # Next.js App Router
-│   │   ├── ai-tutor/          # Feature routes
+│   │   ├── proppilot/          # Feature routes
 │   │   └── layout.tsx         # Root layout
 │   ├── components/
 │   │   ├── ui/                # shadcn/ui components
 │   │   └── shared/            # Cross-feature shared components
 │   ├── features/              # Feature-based modules
-│   │   └── ai-tutor/
+│   │   └── proppilot/
 │   │       ├── components/    # Feature-specific components
 │   │       ├── hooks/         # Custom hooks
 │   │       ├── actions.ts     # Server Actions
@@ -101,31 +101,32 @@ frontend/
 ### TypeScript Usage
 ```typescript
 // ✅ Good - Proper typing
-interface LearningTrack {
+interface ProposalDocument {
   id: string;
   title: string;
-  description: string;
-  progress: number;
+  clientName: string;
+  status: 'draft' | 'pending_review' | 'approved';
 }
 
 // ❌ Bad - Using any
-const track: any = fetchTrack();
+const proposal: any = fetchProposal();
 ```
 
 ### Component Structure
 ```typescript
 // ✅ Good - Server Component with proper typing
 interface Props {
-  trackId: string;
+  proposalId: string;
 }
 
-export default async function TrackDetail({ trackId }: Props) {
-  const track = await fetchTrack(trackId);
+export default async function ProposalDetail({ proposalId }: Props) {
+  const proposal = await fetchProposalData(proposalId);
   
   return (
     <div>
-      <h1>{track.title}</h1>
-      <TrackProgress progress={track.progress} />
+      <h1>{proposal.title}</h1>
+      {/* Assuming ProposalStatusDisplay is a component that renders status */}
+      <ProposalStatusDisplay status={proposal.status} />
     </div>
   );
 }
@@ -133,21 +134,24 @@ export default async function TrackDetail({ trackId }: Props) {
 // ✅ Good - Client Component when needed
 'use client';
 
-interface InteractiveProps {
-  onUpdate: (progress: number) => void;
+interface ProposalStatusUpdaterProps {
+  onUpdateStatus: (status: ProposalDocument['status']) => void;
 }
 
-export function InteractiveProgress({ onUpdate }: InteractiveProps) {
-  const [progress, setProgress] = useState(0);
+export function ProposalStatusUpdater({ onUpdateStatus }: ProposalStatusUpdaterProps) {
+  const [currentStatus, setCurrentStatus] = useState<ProposalDocument['status']>('draft');
   
   return (
-    <Slider 
-      value={progress} 
-      onValueChange={(value) => {
-        setProgress(value);
-        onUpdate(value);
-      }} 
-    />
+    // Conceptual example, actual UI element can vary
+    <select value={currentStatus} onChange={(e) => {
+      const newStatus = e.target.value as ProposalDocument['status'];
+      setCurrentStatus(newStatus);
+      onUpdateStatus(newStatus);
+    }}>
+      <option value="draft">Draft</option>
+      <option value="pending_review">Pending Review</option>
+      <option value="approved">Approved</option>
+    </select>
   );
 }
 ```
@@ -159,27 +163,31 @@ export function InteractiveProgress({ onUpdate }: InteractiveProps) {
 
 import { revalidatePath } from 'next/cache';
 
-export async function updateLearningProgress(
-  trackId: string,
-  progress: number
+// Assuming ProposalDocument is imported or defined elsewhere
+// import { ProposalDocument } from './types';
+
+export async function updateProposalStatus(
+  proposalId: string,
+  newStatus: ProposalDocument['status']
 ) {
   // Validate input
-  if (progress < 0 || progress > 100) {
-    return { error: 'Invalid progress value' };
+  const validStatuses: ProposalDocument['status'][] = ['draft', 'pending_review', 'approved'];
+  if (!validStatuses.includes(newStatus)) {
+    return { error: 'Invalid status value' };
   }
   
   try {
     // Update via FastAPI
-    await fetch(`${process.env.API_URL}/tracks/${trackId}/progress`, {
+    await fetch(`${process.env.API_URL}/proposals/${proposalId}/status`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ progress })
+      body: JSON.stringify({ status: newStatus })
     });
     
-    revalidatePath('/ai-tutor');
+    revalidatePath(`/proposals/${proposalId}`); // Or a more general path like '/proposals'
     return { success: true };
   } catch (error) {
-    return { error: 'Failed to update progress' };
+    return { error: 'Failed to update proposal status' };
   }
 }
 ```
@@ -226,43 +234,55 @@ export const apiClient = new APIClient();
 
 ### Component Testing
 ```typescript
-// components/TrackCard.test.tsx
+// components/ProposalCard.test.tsx
 import { render, screen } from '@testing-library/react';
-import { TrackCard } from './TrackCard';
+import { ProposalCard } from './ProposalCard'; // Assuming ProposalCard component
+// Assuming ProposalDocument is imported
+// import { ProposalDocument } from '../types';
 
-describe('TrackCard', () => {
-  const mockTrack = {
+describe('ProposalCard', () => {
+  const mockProposal: ProposalDocument = {
     id: '1',
-    title: 'React Basics',
-    description: 'Learn React fundamentals',
-    progress: 50
+    title: 'New Marketing Campaign Proposal',
+    clientName: 'Acme Corp',
+    status: 'draft'
   };
 
-  it('displays track information correctly', () => {
-    render(<TrackCard track={mockTrack} />);
+  it('displays proposal information correctly', () => {
+    render(<ProposalCard proposal={mockProposal} />);
     
-    expect(screen.getByText('React Basics')).toBeInTheDocument();
-    expect(screen.getByText('Learn React fundamentals')).toBeInTheDocument();
-    expect(screen.getByText('50%')).toBeInTheDocument();
+    expect(screen.getByText('New Marketing Campaign Proposal')).toBeInTheDocument();
+    expect(screen.getByText('Acme Corp')).toBeInTheDocument();
+    // Assuming ProposalCard renders status like "Status: Draft"
+    expect(screen.getByText('Status: draft')).toBeInTheDocument();
   });
 });
 ```
 
 ### Hook Testing
 ```typescript
-// hooks/useLearningProgress.test.ts
+// hooks/useProposalState.test.ts
 import { renderHook, act } from '@testing-library/react';
-import { useLearningProgress } from './useLearningProgress';
+import { useProposalState } from './useProposalState'; // Assuming useProposalState hook
+// Assuming ProposalDocument is imported
+// import { ProposalDocument } from '../types';
 
-describe('useLearningProgress', () => {
-  it('updates progress correctly', async () => {
-    const { result } = renderHook(() => useLearningProgress('track-1'));
+describe('useProposalState', () => {
+  it('updates status correctly', async () => {
+    // Assume useProposalState hook takes proposalId and initial state
+    const { result } = renderHook(() => useProposalState('proposal-1', {
+      id: 'proposal-1',
+      title: 'Initial Proposal',
+      clientName: 'Test Client',
+      status: 'draft'
+    }));
     
     await act(async () => {
-      await result.current.updateProgress(75);
+      // Assume the hook exposes an updateStatus function
+      await result.current.updateStatus('pending_review');
     });
     
-    expect(result.current.progress).toBe(75);
+    expect(result.current.status).toBe('pending_review');
   });
 });
 ```
@@ -272,13 +292,13 @@ describe('useLearningProgress', () => {
 ### Error Handling
 ```typescript
 // ✅ Good - Proper error handling
-async function fetchTrackData(id: string) {
+async function fetchProposalDetails(proposalId: string) {
   try {
-    const response = await apiClient.get(`/tracks/${id}`);
+    const response = await apiClient.get(`/proposals/${proposalId}`);
     return { data: response, error: null };
   } catch (error) {
-    console.error('Failed to fetch track:', error);
-    return { data: null, error: 'Failed to load track data' };
+    console.error('Failed to fetch proposal:', error);
+    return { data: null, error: 'Failed to load proposal data' };
   }
 }
 ```
@@ -286,18 +306,18 @@ async function fetchTrackData(id: string) {
 ### Loading States
 ```typescript
 // ✅ Good - Proper loading states
-function TrackList() {
-  const [tracks, setTracks] = useState<Track[]>([]);
+function ProposalList() {
+  const [proposals, setProposals] = useState<ProposalDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
-    fetchTracks()
+    fetchProposals() // Assuming fetchProposals returns { data?, error? }
       .then(({ data, error }) => {
         if (error) {
           setError(error);
-        } else {
-          setTracks(data);
+        } else if (data) { // Ensure data is not null/undefined
+          setProposals(data);
         }
       })
       .finally(() => setLoading(false));
@@ -308,8 +328,8 @@ function TrackList() {
   
   return (
     <div>
-      {tracks.map(track => (
-        <TrackCard key={track.id} track={track} />
+      {proposals.map(proposal => (
+        <ProposalCard key={proposal.id} proposal={proposal} />
       ))}
     </div>
   );
