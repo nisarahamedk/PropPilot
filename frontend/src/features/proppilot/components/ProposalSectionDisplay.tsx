@@ -77,7 +77,7 @@ export default function ProposalSectionDisplay() {
       <CardHeader>
         <CardTitle>Proposal Document Sections</CardTitle>
         <CardDescription>
-          Review the generated proposal content below. Click "Edit" to make manual changes to a section.
+          Review the generated proposal content below. Click &quot;Edit&quot; to make manual changes to a section.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

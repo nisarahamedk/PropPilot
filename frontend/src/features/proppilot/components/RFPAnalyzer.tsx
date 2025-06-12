@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import { useDropzone, FileRejection } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input'; // Already added
 import { Label } from '@/components/ui/label'; // To be added
@@ -19,7 +19,7 @@ export default function RFPAnalyzer() {
   const [extractedRequirements, setExtractedRequirements] = useState<ExtractedRequirement[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const onDrop = useCallback((acceptedFiles: File[], fileRejections: any[]) => {
+  const onDrop = useCallback((acceptedFiles: File[], fileRejections: FileRejection[]) => {
     setError(null);
     setExtractedRequirements([]);
     if (fileRejections.length > 0) {
