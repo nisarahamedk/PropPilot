@@ -1,10 +1,4 @@
 {
   "workdir": "/workdir",
-  "base_image": "ubuntu:24.04",
-  "setup_commands": [
-    "apt-get update \u0026\u0026 apt-get install -y curl",
-    "curl -fsSL https://deb.nodesource.com/setup_20.x | bash -",
-    "apt-get install -y nodejs",
-    "cd /workdir/frontend \u0026\u0026 npm install"
-  ]
+  "base_image": "node:20"
 }

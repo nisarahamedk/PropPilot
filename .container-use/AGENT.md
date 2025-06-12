@@ -1,1 +1,1 @@
-This is a Next.js 15 React 19 frontend application with Tailwind CSS and shadcn/ui components. The app includes a modern left sidebar navigation. Node.js and npm are installed to run the development server.
+This is a Next.js 15 React 19 frontend application with Tailwind CSS and shadcn/ui components. The app includes a modern left sidebar navigation. Node.js and npm are pre-installed to run the development server. Working directory is /workdir/frontend for the Next.js app.
