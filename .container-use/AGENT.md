@@ -1,1 +1,1 @@
-No instructions found. Please look around the filesystem and update me
+This is a Next.js 15 React 19 frontend application with Tailwind CSS and shadcn/ui components. The app includes a modern left sidebar navigation. Node.js and npm are installed to run the development server.
