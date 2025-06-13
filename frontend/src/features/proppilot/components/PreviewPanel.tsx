@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { XCircle, Edit3, Check, X, Navigation } from 'lucide-react';
+import ExportButton from './export/ExportButton';
+import { ConversationState } from '../types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +23,7 @@ interface PreviewPanelProps {
   isMobile?: boolean;
   onSectionClick?: (sectionId: string) => void;
   activeSectionId?: string;
+  conversationState?: ConversationState;
 }
 
 const PreviewPanel: React.FC<PreviewPanelProps> = ({ 
@@ -29,7 +32,8 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
   onClose,
   isMobile = false,
   onSectionClick,
-  activeSectionId
+  activeSectionId,
+  conversationState
 }) => {
   const proposalSections = [
     { id: 'executive-summary', title: 'Executive Summary' },
@@ -84,13 +88,23 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
         <div className="p-4 border-b border-border bg-background/95">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-foreground">Draft Preview</h2>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={onClose}
-            >
-              <XCircle className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center space-x-2">
+              {conversationState && (
+                <ExportButton 
+                  conversationState={conversationState}
+                  variant="outline"
+                  size="sm"
+                  showDropdown={false}
+                />
+              )}
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={onClose}
+              >
+                <XCircle className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -205,6 +219,13 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-foreground">Draft Preview</h2>
             <div className="flex items-center space-x-2">
+              {conversationState && (
+                <ExportButton 
+                  conversationState={conversationState}
+                  variant="outline"
+                  size="sm"
+                />
+              )}
               <Button 
                 variant="ghost" 
                 size="sm"
@@ -242,7 +263,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                       handleSectionClick(section.id);
                       setShowNavigation(false);
                     }}
-                    className={`text-xs h-6 px-2 ${
+                    className={`text-xs min-h-[44px] px-2 ${
                       activeSectionId === section.id ? 'bg-primary text-primary-foreground' : ''
                     } ${
                       index < (messages.length - 1) ? 'border-green-200' : 
@@ -298,7 +319,7 @@ const PreviewPanel: React.FC<PreviewPanelProps> = ({
                                 e.stopPropagation();
                                 handleEditSection(section.id, getSectionContent(section.id, index));
                               }}
-                              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="min-h-[44px] min-w-[44px] p-0 opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                               <Edit3 className="h-3 w-3" />
                             </Button>

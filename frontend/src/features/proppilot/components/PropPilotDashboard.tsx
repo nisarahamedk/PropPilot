@@ -1082,7 +1082,7 @@ const PropPilotDashboard: React.FC = () => {
                     <span className="text-xs text-muted-foreground">
                       {index + 1}
                     </span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
+                    <Button variant="ghost" size="icon" className="min-h-[44px] min-w-[44px]">
                       <MoreHorizontal className="h-3 w-3" />
                     </Button>
                   </div>
