@@ -285,59 +285,44 @@ const PropPilotDashboard: React.FC = () => {
     });
 
   const renderDashboard = () => (
-    <div className="min-h-screen bg-background">
+    <div className="h-full bg-background">
       {/* Header */}
-      <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 sm:space-x-6">
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground">PropPilot</h1>
-              <div className="relative hidden sm:block">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Search proposals..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 w-64 lg:w-80"
-                />
-              </div>
-            </div>
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <Button
-                onClick={() => setActiveView('chat')}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-                size="sm"
-              >
-                <Plus className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">New Proposal</span>
-              </Button>
-              <Button variant="ghost" size="icon" className="hidden sm:flex">
-                <Bell className="h-4 w-4" />
-              </Button>
-              <Avatar className="h-8 w-8">
-                <div className="bg-primary text-primary-foreground flex items-center justify-center h-full w-full text-sm">
-                  JD
-                </div>
-              </Avatar>
-            </div>
-          </div>
-          {/* Mobile search */}
-          <div className="mt-4 sm:hidden">
+      <header className="border-b border-border bg-background p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-6">
+            <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 placeholder="Search proposals..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-full"
+                className="pl-10 w-80"
               />
             </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Button
+              onClick={() => setActiveView('chat')}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              New Proposal
+            </Button>
+            <Button variant="ghost" size="icon">
+              <Bell className="h-4 w-4" />
+            </Button>
+            <Avatar className="h-8 w-8">
+              <div className="bg-primary text-primary-foreground flex items-center justify-center h-full w-full text-sm">
+                JD
+              </div>
+            </Avatar>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
+      <main className="p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 space-y-4 sm:space-y-0">
           <div className="flex items-center space-x-2 sm:space-x-4">
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Your Proposals</h2>
@@ -498,10 +483,10 @@ const PropPilotDashboard: React.FC = () => {
   );
 
   const renderChat = () => (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="h-full bg-background flex flex-col">
       {/* Chat Header */}
-      <header className="border-b border-border p-6 bg-background/95 backdrop-blur sticky top-0 z-50">
-        <div className="flex items-center justify-between max-w-6xl mx-auto">
+      <header className="border-b border-border p-6 bg-background">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="icon" onClick={() => setActiveView('dashboard')}>
               <ChevronLeft className="h-4 w-4" />
@@ -518,10 +503,10 @@ const PropPilotDashboard: React.FC = () => {
       </header>
 
       {/* Chat Content */}
-      <div className="flex-1 flex justify-center">
+      <div className="flex-1 flex flex-col">
         <div className="flex-1 flex flex-col max-w-4xl mx-auto px-6">
           {/* Messages */}
-          <ScrollArea className="flex-1 py-8">
+          <ScrollArea className="flex-1 py-6">
             <div className="space-y-6">
               {messages.map((message) => (
                 <motion.div
@@ -601,8 +586,8 @@ const PropPilotDashboard: React.FC = () => {
           </ScrollArea>
 
           {/* Input Area */}
-          <div className="border-t border-border p-6 bg-background/95 backdrop-blur">
-            <div className="flex space-x-4 max-w-4xl mx-auto">
+          <div className="border-t border-border p-6 bg-background">
+            <div className="flex space-x-4">
               <div className="flex-1">
                 <Textarea
                   placeholder="Type your message..."
@@ -631,9 +616,9 @@ const PropPilotDashboard: React.FC = () => {
   );
 
   const renderEditor = () => (
-    <div className="min-h-screen bg-background flex flex-col lg:flex-row">
+    <div className="h-full bg-background flex flex-col lg:flex-row">
       {/* Left Panel - Chat */}
-      <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-border flex flex-col bg-muted/20 lg:h-screen">
+      <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-border flex flex-col bg-muted/20 h-full">
         <div className="p-4 border-b border-border bg-background/95">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-foreground">Refinement Chat</h2>
@@ -727,7 +712,7 @@ const PropPilotDashboard: React.FC = () => {
 
       {/* Main Editor Panel */}
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="p-6 border-b border-border bg-background/95 backdrop-blur sticky top-0 z-40">
+        <div className="p-6 border-b border-border bg-background">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <h2 className="font-semibold text-foreground">Proposal Editor</h2>
@@ -817,8 +802,8 @@ const PropPilotDashboard: React.FC = () => {
         </ScrollArea>
 
         {/* Bottom Toolbar */}
-        <div className="p-6 border-t border-border bg-background/95 backdrop-blur">
-          <div className="flex items-center justify-between max-w-6xl mx-auto">
+        <div className="p-6 border-t border-border bg-background">
+          <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Button
                 variant="outline"
@@ -863,7 +848,7 @@ const PropPilotDashboard: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-full bg-background">
       <AnimatePresence mode="wait">
         {activeView === 'dashboard' && (
           <motion.div
