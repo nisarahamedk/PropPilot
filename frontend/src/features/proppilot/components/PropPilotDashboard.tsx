@@ -42,6 +42,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import PreviewPanel from './PreviewPanel';
 
 interface Proposal {
   id: string;
@@ -69,6 +70,19 @@ interface Slide {
 
 const PropPilotDashboard: React.FC = () => {
   const [activeView, setActiveView] = useState<'dashboard' | 'chat' | 'editor'>('dashboard');
+  const [chatLayoutMode, setChatLayoutMode] = useState<'full' | 'split'>('full');
+  const [showPreviewPanel, setShowPreviewPanel] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const [activeTab, setActiveTab] = useState<'chat' | 'preview'>('chat');
+  const [contextData, setContextData] = useState({
+    projectDetails: false,
+    clientInfo: false,
+    scope: false,
+    budget: false,
+    timeline: false
+  });
+  const [readinessScore, setReadinessScore] = useState(0);
+  const [activeSectionId, setActiveSectionId] = useState<string>('');
   const [proposals, setProposals] = useState<Proposal[]>([
     {
       id: '1',
@@ -146,6 +160,119 @@ const PropPilotDashboard: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Handle responsive breakpoints
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      setIsMobile(width < 1200); // Consider anything below 1200px as mobile/tablet
+    };
+
+    handleResize(); // Set initial state
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Context detection functions
+  const analyzeMessageContext = (messageContent: string) => {
+    const content = messageContent.toLowerCase();
+    
+    // Project details keywords
+    const projectKeywords = ['project', 'website', 'app', 'application', 'system', 'platform', 'software', 'development'];
+    // Client info keywords  
+    const clientKeywords = ['client', 'company', 'business', 'organization', 'customer', 'for'];
+    // Scope keywords
+    const scopeKeywords = ['need', 'require', 'want', 'feature', 'functionality', 'scope', 'deliverable'];
+    // Budget keywords
+    const budgetKeywords = ['budget', 'cost', 'price', 'investment', 'dollar', '$', 'money', 'expense'];
+    // Timeline keywords
+    const timelineKeywords = ['timeline', 'deadline', 'duration', 'time', 'month', 'week', 'day', 'schedule'];
+
+    return {
+      projectDetails: projectKeywords.some(keyword => content.includes(keyword)),
+      clientInfo: clientKeywords.some(keyword => content.includes(keyword)),
+      scope: scopeKeywords.some(keyword => content.includes(keyword)),
+      budget: budgetKeywords.some(keyword => content.includes(keyword)),
+      timeline: timelineKeywords.some(keyword => content.includes(keyword))
+    };
+  };
+
+  const calculateReadinessScore = (context: typeof contextData) => {
+    const weights = {
+      projectDetails: 25,
+      clientInfo: 20,
+      scope: 30,
+      budget: 15,
+      timeline: 10
+    };
+    
+    return Object.entries(context).reduce((score, [key, value]) => {
+      return score + (value ? weights[key as keyof typeof weights] : 0);
+    }, 0);
+  };
+
+  const shouldShowGenerate = () => {
+    return readinessScore >= 50 && messages.length >= 2;
+  };
+
+  const getSmartSuggestions = () => {
+    const suggestions = [];
+    
+    if (!contextData.projectDetails) {
+      suggestions.push("What type of project are you working on? (e.g., website, mobile app, software system)");
+    }
+    if (!contextData.clientInfo) {
+      suggestions.push("Tell me about your client or target audience");
+    }
+    if (!contextData.scope) {
+      suggestions.push("What specific features or deliverables do you need?");
+    }
+    if (!contextData.budget) {
+      suggestions.push("What's your budget range for this project?");
+    }
+    if (!contextData.timeline) {
+      suggestions.push("When do you need this project completed?");
+    }
+    
+    return suggestions;
+  };
+
+  const getMissingCriticalInfo = () => {
+    const missing = [];
+    if (!contextData.projectDetails) missing.push("Project Type");
+    if (!contextData.scope) missing.push("Requirements");
+    if (!contextData.clientInfo) missing.push("Client Info");
+    return missing;
+  };
+
+  // Update context analysis when messages change
+  useEffect(() => {
+    const userMessages = messages.filter(msg => msg.type === 'user');
+    const allUserContent = userMessages.map(msg => msg.content).join(' ');
+    const detectedContext = analyzeMessageContext(allUserContent);
+    
+    // Merge with existing context (once detected, stays true)
+    const updatedContext = {
+      projectDetails: contextData.projectDetails || detectedContext.projectDetails,
+      clientInfo: contextData.clientInfo || detectedContext.clientInfo,
+      scope: contextData.scope || detectedContext.scope,
+      budget: contextData.budget || detectedContext.budget,
+      timeline: contextData.timeline || detectedContext.timeline
+    };
+    
+    setContextData(updatedContext);
+    setReadinessScore(calculateReadinessScore(updatedContext));
+  }, [messages]);
+
+  // Trigger preview panel when we have enough context
+  useEffect(() => {
+    if (readinessScore >= 30 && !showPreviewPanel) {
+      setShowPreviewPanel(true);
+      if (!isMobile) {
+        setChatLayoutMode('split');
+      }
+    }
+  }, [readinessScore, showPreviewPanel, isMobile]);
 
   const handleSendMessage = () => {
     if (!currentMessage.trim()) return;
@@ -482,30 +609,216 @@ const PropPilotDashboard: React.FC = () => {
     </div>
   );
 
-  const renderChat = () => (
+  const handleClosePreview = () => {
+    setShowPreviewPanel(false);
+    setChatLayoutMode('full');
+  };
+
+  const handleSectionClick = (sectionId: string) => {
+    setActiveSectionId(sectionId);
+    // Scroll to section or perform other navigation logic
+  };
+
+  const renderMobileChat = () => (
     <div className="h-full bg-background flex flex-col">
-      {/* Chat Header */}
-      <header className="border-b border-border p-6 bg-background">
-        <div className="flex items-center justify-between">
+      {/* Mobile Header with Tabs */}
+      <header className="border-b border-border p-4 bg-background">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="icon" onClick={() => setActiveView('dashboard')}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <h1 className="text-xl font-semibold text-foreground">New Proposal</h1>
           </div>
-          <div className="flex items-center space-x-3">
-            <Button variant="outline" size="sm">Save Draft</Button>
-            <Button variant="ghost" size="icon">
-              <Settings className="h-4 w-4" />
-            </Button>
-          </div>
+          <Button variant="outline" size="sm">Save Draft</Button>
         </div>
+        
+        {showPreviewPanel && (
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'chat' | 'preview')}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="chat">Chat</TabsTrigger>
+              <TabsTrigger value="preview">Preview</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
       </header>
 
-      {/* Chat Content */}
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1 flex flex-col max-w-4xl mx-auto px-6">
-          {/* Messages */}
+      {/* Mobile Content */}
+      <div className="flex-1 overflow-hidden">
+        {activeTab === 'chat' || !showPreviewPanel ? (
+          <div className="h-full flex flex-col px-4">
+            {/* Messages */}
+            <ScrollArea className="flex-1 py-6">
+              <div className="space-y-6">
+                {messages.map((message) => (
+                  <motion.div
+                    key={message.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-xs ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
+                      <div className={`p-3 rounded-lg ${
+                        message.type === 'user' 
+                          ? 'bg-primary text-primary-foreground ml-8' 
+                          : 'bg-muted text-foreground mr-8'
+                      }`}>
+                        <p className="text-sm">{message.content}</p>
+                      </div>
+                    </div>
+                    {message.type === 'ai' && (
+                      <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium mr-3 order-0">
+                        AI
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+
+                {/* Quick Start Templates - Mobile */}
+                {messages.length === 1 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex justify-start"
+                  >
+                    <div className="max-w-xs mr-8">
+                      <p className="text-sm text-muted-foreground mb-3">Quick start:</p>
+                      <div className="grid grid-cols-1 gap-2">
+                        {quickStartTemplates.map((template) => (
+                          <Button
+                            key={template}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleQuickStart(template)}
+                            className="justify-start text-xs"
+                          >
+                            <Zap className="h-3 w-3 mr-2" />
+                            {template}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+
+            {/* Readiness Indicator */}
+            {readinessScore > 0 && readinessScore < 100 && (
+              <div className="px-4 py-2 bg-muted/30 border-t border-border">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">Proposal Readiness</span>
+                  <span className="font-medium text-foreground">{readinessScore}%</span>
+                </div>
+                <div className="mt-1 w-full bg-background rounded-full h-1.5">
+                  <motion.div 
+                    className="bg-primary h-1.5 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${readinessScore}%` }}
+                    transition={{ duration: 0.5 }}
+                  />
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {readinessScore < 30 && "Tell me about your project..."}
+                  {readinessScore >= 30 && readinessScore < 50 && "Getting there! Share more details..."}
+                  {readinessScore >= 50 && "Ready to generate!"}
+                </div>
+                
+                {/* Smart Suggestions */}
+                {readinessScore < 70 && getSmartSuggestions().length > 0 && (
+                  <div className="mt-2 p-2 bg-primary/10 rounded-lg">
+                    <p className="text-xs font-medium text-primary mb-1">💡 Quick suggestions:</p>
+                    <div className="space-y-1">
+                      {getSmartSuggestions().slice(0, 2).map((suggestion, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentMessage(suggestion)}
+                          className="block w-full text-left text-xs text-primary hover:text-primary/80 transition-colors"
+                        >
+                          • {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Mobile Input Area */}
+            <div className="border-t border-border p-4 bg-background">
+              <div className="flex space-x-2">
+                <div className="flex-1">
+                  <Textarea
+                    placeholder="Type your message..."
+                    value={currentMessage}
+                    onChange={(e) => setCurrentMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
+                    className="min-h-[50px] resize-none text-sm"
+                  />
+                </div>
+                <div className="flex flex-col space-y-2">
+                  <Button onClick={handleSendMessage} disabled={!currentMessage.trim()} size="sm">
+                    <Send className="h-4 w-4" />
+                  </Button>
+                  {shouldShowGenerate() && (
+                    <Button onClick={handleGenerateProposal} variant="outline" size="sm">
+                      <FileText className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="h-full">
+            <PreviewPanel 
+              isVisible={true}
+              messages={messages}
+              onClose={() => setActiveTab('chat')}
+              isMobile={true}
+              onSectionClick={handleSectionClick}
+              activeSectionId={activeSectionId}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderDesktopChat = () => (
+    <div className="h-full bg-background flex">
+      {/* Chat Panel */}
+      <motion.div
+        animate={{ 
+          width: chatLayoutMode === 'split' ? "40%" : "100%" 
+        }}
+        transition={{ duration: 0.6, ease: "easeInOut" }}
+        className="flex flex-col border-r border-border"
+      >
+        {/* Chat Header */}
+        <header className="border-b border-border p-6 bg-background">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Button variant="ghost" size="icon" onClick={() => setActiveView('dashboard')}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <h1 className="text-xl font-semibold text-foreground">New Proposal</h1>
+            </div>
+            <div className="flex items-center space-x-3">
+              <Button variant="outline" size="sm">Save Draft</Button>
+              <Button variant="ghost" size="icon">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        {/* Chat Content */}
+        <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col px-6">
+            {/* Messages */}
           <ScrollArea className="flex-1 py-6">
             <div className="space-y-6">
               {messages.map((message) => (
@@ -515,11 +828,11 @@ const PropPilotDashboard: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className={`max-w-2xl ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
+                  <div className={`${chatLayoutMode === 'split' ? 'max-w-sm' : 'max-w-2xl'} ${message.type === 'user' ? 'order-2' : 'order-1'}`}>
                     <div className={`p-4 rounded-lg ${
                       message.type === 'user' 
-                        ? 'bg-primary text-primary-foreground ml-12' 
-                        : 'bg-muted text-foreground mr-12'
+                        ? `bg-primary text-primary-foreground ${chatLayoutMode === 'split' ? 'ml-6' : 'ml-12'}` 
+                        : `bg-muted text-foreground ${chatLayoutMode === 'split' ? 'mr-6' : 'mr-12'}`
                     }`}>
                       <p className="text-sm">{message.content}</p>
                     </div>
@@ -539,7 +852,7 @@ const PropPilotDashboard: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex justify-start"
                 >
-                  <div className="max-w-2xl mr-12">
+                  <div className={`${chatLayoutMode === 'split' ? 'max-w-sm mr-6' : 'max-w-2xl mr-12'}`}>
                     <p className="text-sm text-muted-foreground mb-3">Quick start templates:</p>
                     <div className="grid grid-cols-2 gap-2">
                       {quickStartTemplates.map((template) => (
@@ -566,7 +879,7 @@ const PropPilotDashboard: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex justify-start"
                 >
-                  <div className="max-w-2xl mr-12">
+                  <div className={`${chatLayoutMode === 'split' ? 'max-w-sm mr-6' : 'max-w-2xl mr-12'}`}>
                     <div className="p-4 rounded-lg bg-muted">
                       <p className="text-sm text-foreground mb-3">Generating your proposal...</p>
                       <Progress value={generationProgress} className="mb-2" />
@@ -585,6 +898,61 @@ const PropPilotDashboard: React.FC = () => {
             </div>
           </ScrollArea>
 
+          {/* Readiness Indicator - Desktop */}
+          {readinessScore > 0 && readinessScore < 100 && (
+            <div className="px-6 py-3 bg-muted/30 border-t border-border">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Proposal Readiness</span>
+                <span className="font-medium text-foreground">{readinessScore}%</span>
+              </div>
+              <div className="mt-2 w-full bg-background rounded-full h-2">
+                <motion.div 
+                  className="bg-primary h-2 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${readinessScore}%` }}
+                  transition={{ duration: 0.5 }}
+                />
+              </div>
+              <div className="mt-2 text-xs text-muted-foreground">
+                {readinessScore < 30 && "Tell me about your project to get started..."}
+                {readinessScore >= 30 && readinessScore < 50 && "Great! Share more details to improve the proposal..."}
+                {readinessScore >= 50 && "Perfect! You have enough details to generate a proposal."}
+              </div>
+              
+              {/* Missing Critical Info Alert */}
+              {getMissingCriticalInfo().length > 0 && readinessScore < 60 && (
+                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <p className="text-sm font-medium text-yellow-800 mb-2">⚠️ Missing key information:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {getMissingCriticalInfo().map((info) => (
+                      <span key={info} className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">
+                        {info}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Smart Suggestions */}
+              {readinessScore < 70 && getSmartSuggestions().length > 0 && (
+                <div className="mt-3 p-3 bg-primary/10 rounded-lg">
+                  <p className="text-sm font-medium text-primary mb-2">💡 Suggested questions:</p>
+                  <div className="space-y-1">
+                    {getSmartSuggestions().slice(0, 3).map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentMessage(suggestion)}
+                        className="block w-full text-left text-sm text-primary hover:text-primary/80 transition-colors py-1"
+                      >
+                        • {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Input Area */}
           <div className="border-t border-border p-6 bg-background">
             <div className="flex space-x-4">
@@ -601,7 +969,7 @@ const PropPilotDashboard: React.FC = () => {
                 <Button onClick={handleSendMessage} disabled={!currentMessage.trim()}>
                   <Send className="h-4 w-4" />
                 </Button>
-                {messages.length > 3 && (
+                {shouldShowGenerate() && (
                   <Button onClick={handleGenerateProposal} variant="outline">
                     <FileText className="h-4 w-4 mr-2" />
                     Generate
@@ -610,10 +978,25 @@ const PropPilotDashboard: React.FC = () => {
               </div>
             </div>
           </div>
+          </div>
         </div>
-      </div>
+      </motion.div>
+
+      {/* Preview Panel */}
+      <PreviewPanel 
+        isVisible={showPreviewPanel}
+        messages={messages}
+        onClose={handleClosePreview}
+        isMobile={isMobile}
+        onSectionClick={handleSectionClick}
+        activeSectionId={activeSectionId}
+      />
     </div>
   );
+
+  const renderChat = () => {
+    return isMobile ? renderMobileChat() : renderDesktopChat();
+  };
 
   const renderEditor = () => (
     <div className="h-full bg-background flex flex-col lg:flex-row">
