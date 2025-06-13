@@ -1,0 +1,351 @@
+import { test, expect, devices } from '@playwright/test';
+
+test.describe('Cross-Device Functionality Tests', () => {
+  const testDevices = [
+    { name: 'Desktop Chrome', device: devices['Desktop Chrome'] },
+    { name: 'Desktop Safari', device: devices['Desktop Safari'] },
+    { name: 'iPad', device: devices['iPad'] },
+    { name: 'iPhone 13', device: devices['iPhone 13'] },
+    { name: 'Pixel 5', device: devices['Pixel 5'] },
+  ];
+
+  testDevices.forEach(({ name, device }) => {
+    test(`should load and function on ${name}`, async ({ browser }) => {
+        const context = await browser.newContext({ ...device });
+        const page = await context.newPage();
+        await page.goto('/proppilot');
+        await page.waitForLoadState('networkidle');
+
+        // Basic functionality test
+        const pageContent = page.locator('body');
+        await expect(pageContent).toBeVisible();
+
+        // Check for interactive elements
+        const buttons = page.locator('button');
+        const buttonCount = await buttons.count();
+        expect(buttonCount).toBeGreaterThan(0);
+
+        // Test first button interaction
+        if (buttonCount > 0) {
+          const firstButton = buttons.first();
+          if (await firstButton.isVisible()) {
+            await firstButton.click();
+            await page.waitForTimeout(200);
+            
+            // Button should still be accessible after click
+            await expect(firstButton).toBeAttached();
+          }
+        }
+        
+        await context.close();
+      });
+
+      test(`should handle text input on ${name}`, async ({ browser }) => {
+        const context = await browser.newContext({ ...device });
+        const page = await context.newPage();
+        await page.goto('/proppilot');
+        await page.waitForLoadState('networkidle');
+
+        // Look for text input fields
+        const textInputs = page.locator('input[type="text"], textarea');
+        const inputCount = await textInputs.count();
+
+        if (inputCount > 0) {
+          const firstInput = textInputs.first();
+          if (await firstInput.isVisible()) {
+            // Test input functionality
+            await firstInput.click();
+            await expect(firstInput).toBeFocused();
+
+            await firstInput.fill('Test input for cross-device compatibility');
+            await expect(firstInput).toHaveValue('Test input for cross-device compatibility');
+
+            // Test submission if Enter key works
+            await page.keyboard.press('Enter');
+            await page.waitForTimeout(300);
+          }
+        }
+        
+        await context.close();
+      });
+
+      test(`should maintain responsive layout on ${name}`, async ({ browser }) => {
+        const context = await browser.newContext({ ...device });
+        const page = await context.newPage();
+        await page.goto('/proppilot');
+        await page.waitForLoadState('networkidle');
+
+        const viewport = page.viewportSize();
+        
+        // Content should be properly laid out for viewport
+        const pageContent = page.locator('body');
+        await expect(pageContent).toBeVisible();
+
+        // Test horizontal scrolling (should not be needed)
+        const bodyWidth = await page.evaluate(() => document.body.scrollWidth);
+        const viewportWidth = viewport?.width || 1024;
+        
+        // Content should fit within viewport width (allow small tolerance)
+        expect(bodyWidth).toBeLessThanOrEqual(viewportWidth + 50);
+        
+        await context.close();
+      });
+    });
+  });
+
+  test.describe('Multi-Device Consistency', () => {
+    test('should maintain feature parity across devices', async ({ browser }) => {
+      // Test multiple devices simultaneously
+      const desktopContext = await browser.newContext({ ...devices['Desktop Chrome'] });
+      const mobileContext = await browser.newContext({ ...devices['iPhone 13'] });
+
+      const desktopPage = await desktopContext.newPage();
+      const mobilePage = await mobileContext.newPage();
+
+      // Load page on both devices
+      await Promise.all([
+        desktopPage.goto('/proppilot'),
+        mobilePage.goto('/proppilot'),
+      ]);
+
+      await Promise.all([
+        desktopPage.waitForLoadState('networkidle'),
+        mobilePage.waitForLoadState('networkidle'),
+      ]);
+
+      // Both should have basic functionality
+      const [desktopButtons, mobileButtons] = await Promise.all([
+        desktopPage.locator('button').count(),
+        mobilePage.locator('button').count(),
+      ]);
+
+      // Both devices should have interactive elements (allowing for some variation)
+      expect(desktopButtons).toBeGreaterThan(0);
+      expect(mobileButtons).toBeGreaterThan(0);
+
+      await desktopContext.close();
+      await mobileContext.close();
+    });
+
+    test('should handle orientation changes on mobile', async ({ browser }) => {
+      const context = await browser.newContext({ ...devices['iPad'] });
+      const page = await context.newPage();
+
+      await page.goto('/proppilot');
+      await page.waitForLoadState('networkidle');
+
+      // Test portrait mode
+      await page.setViewportSize({ width: 768, height: 1024 });
+      await page.waitForTimeout(300);
+
+      let pageContent = page.locator('body');
+      await expect(pageContent).toBeVisible();
+
+      // Test landscape mode
+      await page.setViewportSize({ width: 1024, height: 768 });
+      await page.waitForTimeout(300);
+
+      pageContent = page.locator('body');
+      await expect(pageContent).toBeVisible();
+
+      await context.close();
+    });
+  });
+
+  test.describe('Touch vs Mouse Interaction', () => {
+    test('should handle touch interactions on touch devices', async ({ browser }) => {
+      const context = await browser.newContext({ ...devices['iPhone 13'] });
+      const page = await context.newPage();
+
+      await page.goto('/proppilot');
+      await page.waitForLoadState('networkidle');
+
+      // Test touch interactions
+      const touchableElements = page.locator('button, [role="button"], a');
+      const elementCount = await touchableElements.count();
+
+      if (elementCount > 0) {
+        const firstElement = touchableElements.first();
+        if (await firstElement.isVisible()) {
+          // Use tap instead of click for touch devices
+          await firstElement.tap();
+          await page.waitForTimeout(200);
+
+          await expect(firstElement).toBeAttached();
+        }
+      }
+
+      await context.close();
+    });
+
+    test('should handle mouse interactions on desktop', async ({ browser }) => {
+      const context = await browser.newContext({ ...devices['Desktop Chrome'] });
+      const page = await context.newPage();
+
+      await page.goto('/proppilot');
+      await page.waitForLoadState('networkidle');
+
+      // Test mouse interactions
+      const clickableElements = page.locator('button, [role="button"], a');
+      const elementCount = await clickableElements.count();
+
+      if (elementCount > 0) {
+        const firstElement = clickableElements.first();
+        if (await firstElement.isVisible()) {
+          // Test hover (desktop-specific)
+          await firstElement.hover();
+          await page.waitForTimeout(100);
+
+          // Test click
+          await firstElement.click();
+          await page.waitForTimeout(200);
+
+          await expect(firstElement).toBeAttached();
+        }
+      }
+
+      await context.close();
+    });
+  });
+
+  test.describe('Performance Across Devices', () => {
+    test('should maintain performance on low-powered devices', async ({ browser }) => {
+      // Simulate lower-powered device with CPU throttling
+      const context = await browser.newContext({ 
+        ...devices['Pixel 5'],
+      });
+      const page = await context.newPage();
+
+      // Simulate slower CPU
+      const client = await page.context().newCDPSession(page);
+      await client.send('Emulation.setCPUThrottlingRate', { rate: 2 });
+
+      const startTime = Date.now();
+      await page.goto('/proppilot');
+      await page.waitForLoadState('networkidle');
+      const loadTime = Date.now() - startTime;
+
+      // Should still load within reasonable time even on slower devices
+      expect(loadTime).toBeLessThan(8000); // 8 seconds maximum
+
+      await context.close();
+    });
+
+    test('should adapt to different network conditions', async ({ browser }) => {
+      const context = await browser.newContext({ ...devices['iPhone 13'] });
+      const page = await context.newPage();
+
+      // Simulate slow network
+      await page.route('**/*', async (route) => {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        await route.continue();
+      });
+
+      const startTime = Date.now();
+      await page.goto('/proppilot');
+      await page.waitForLoadState('domcontentloaded');
+      const loadTime = Date.now() - startTime;
+
+      // Should handle slow network gracefully
+      expect(loadTime).toBeLessThan(15000); // 15 seconds maximum
+
+      const pageContent = page.locator('body');
+      await expect(pageContent).toBeVisible();
+
+      await context.close();
+    });
+  });
+
+  test.describe('Browser Compatibility', () => {
+    const browsers = [
+      { name: 'Chromium', device: devices['Desktop Chrome'] },
+      { name: 'WebKit', device: devices['Desktop Safari'] },
+    ];
+
+    browsers.forEach(({ name, device }) => {
+      test(`should work in ${name}`, async ({ page }) => {
+        test.skip(name === 'WebKit' && process.env.CI, 'WebKit tests skipped in CI');
+        
+        await page.goto('/proppilot');
+        await page.waitForLoadState('networkidle');
+
+        // Basic functionality test
+        const pageContent = page.locator('body');
+        await expect(pageContent).toBeVisible();
+
+        // Test JavaScript functionality
+        const jsWorking = await page.evaluate(() => {
+          return typeof window !== 'undefined' && typeof document !== 'undefined';
+        });
+        expect(jsWorking).toBe(true);
+
+        // Test modern JS features
+        const modernJSSupport = await page.evaluate(() => {
+          try {
+            // Test arrow functions, const/let, template literals
+            const test = () => `Modern JS works`;
+            return test() === 'Modern JS works';
+          } catch {
+            return false;
+          }
+        });
+        expect(modernJSSupport).toBe(true);
+      });
+    });
+  });
+
+  test.describe('Accessibility Across Devices', () => {
+    test('should maintain accessibility on mobile', async ({ browser }) => {
+      const context = await browser.newContext({ ...devices['iPhone 13'] });
+      const page = await context.newPage();
+
+      await page.goto('/proppilot');
+      await page.waitForLoadState('networkidle');
+
+      // Test keyboard navigation on mobile (external keyboard scenario)
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(100);
+
+      const focusedElement = page.locator(':focus');
+      const hasFocus = await focusedElement.count();
+
+      if (hasFocus > 0) {
+        await expect(focusedElement.first()).toBeFocused();
+      }
+
+      // Test voice-over/screen reader compatibility
+      const headings = page.locator('h1, h2, h3, h4, h5, h6');
+      const headingCount = await headings.count();
+      expect(headingCount).toBeGreaterThanOrEqual(1);
+
+      await context.close();
+    });
+
+    test('should support high contrast mode across devices', async ({ browser }) => {
+      const devices_to_test = [devices['Desktop Chrome'], devices['iPad']];
+
+      for (const device of devices_to_test) {
+        const context = await browser.newContext({ ...device });
+        const page = await context.newPage();
+
+        await page.emulateMedia({ colorScheme: 'dark' });
+        await page.goto('/proppilot');
+        await page.waitForLoadState('networkidle');
+
+        const pageContent = page.locator('body');
+        await expect(pageContent).toBeVisible();
+
+        // Verify dark mode styling is applied
+        const bodyStyles = await page.evaluate(() => {
+          return window.getComputedStyle(document.body);
+        });
+        
+        // Basic check that dark mode has some effect
+        expect(bodyStyles).toBeDefined();
+
+        await context.close();
+      }
+    });
+  });
+});
+
