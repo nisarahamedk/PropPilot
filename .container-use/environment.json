@@ -1,4 +1,0 @@
-{
-  "workdir": "/workdir",
-  "base_image": "node:20"
-}
