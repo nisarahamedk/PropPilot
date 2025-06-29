@@ -343,8 +343,27 @@ const PropPilotDashboard: React.FC = () => {
 
   const handleQuickStart = (template: string) => {
     const message = `I'd like to create a ${template} proposal.`;
-    setCurrentMessage(message);
-    handleSendMessage();
+    
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: message,
+      timestamp: new Date().toISOString()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setCurrentMessage('');
+
+    // Simulate AI response
+    setTimeout(() => {
+      const aiResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        type: 'ai',
+        content: generateAIResponse(message),
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, aiResponse]);
+    }, 1000);
   };
 
   const handleExport = async (type: 'pdf' | 'pptx' | 'docx') => {
@@ -646,9 +665,10 @@ const PropPilotDashboard: React.FC = () => {
       {/* Mobile Content */}
       <div className="flex-1 overflow-hidden">
         {activeTab === 'chat' || !showPreviewPanel ? (
-          <div className="h-full flex flex-col px-4">
+          <div className="h-full flex flex-col overflow-hidden">
             {/* Messages */}
-            <ScrollArea className="flex-1 py-6">
+            <div className="flex-1 overflow-hidden">
+              <ScrollArea className="h-full px-4 py-6">
               <div className="space-y-6">
                 {messages.map((message) => (
                   <motion.div
@@ -703,7 +723,8 @@ const PropPilotDashboard: React.FC = () => {
 
                 <div ref={messagesEndRef} />
               </div>
-            </ScrollArea>
+              </ScrollArea>
+            </div>
 
             {/* Readiness Indicator */}
             {readinessScore > 0 && readinessScore < 100 && (
@@ -747,7 +768,7 @@ const PropPilotDashboard: React.FC = () => {
             )}
 
             {/* Mobile Input Area */}
-            <div className="border-t border-border p-4 bg-background">
+            <div className="border-t border-border p-4 bg-background flex-shrink-0">
               <div className="flex space-x-2">
                 <div className="flex-1">
                   <Textarea
@@ -816,10 +837,10 @@ const PropPilotDashboard: React.FC = () => {
         </header>
 
         {/* Chat Content */}
-        <div className="flex-1 flex flex-col">
-          <div className="flex-1 flex flex-col px-6">
-            {/* Messages */}
-          <ScrollArea className="flex-1 py-6">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Messages */}
+          <div className="flex-1 overflow-hidden">
+            <ScrollArea className="h-full px-6 py-6">
             <div className="space-y-6">
               {messages.map((message) => (
                 <motion.div
@@ -896,7 +917,8 @@ const PropPilotDashboard: React.FC = () => {
 
               <div ref={messagesEndRef} />
             </div>
-          </ScrollArea>
+            </ScrollArea>
+          </div>
 
           {/* Readiness Indicator - Desktop */}
           {readinessScore > 0 && readinessScore < 100 && (
@@ -954,7 +976,7 @@ const PropPilotDashboard: React.FC = () => {
           )}
 
           {/* Input Area */}
-          <div className="border-t border-border p-6 bg-background">
+          <div className="border-t border-border p-6 bg-background flex-shrink-0">
             <div className="flex space-x-4">
               <div className="flex-1">
                 <Textarea
@@ -977,7 +999,6 @@ const PropPilotDashboard: React.FC = () => {
                 )}
               </div>
             </div>
-          </div>
           </div>
         </div>
       </motion.div>

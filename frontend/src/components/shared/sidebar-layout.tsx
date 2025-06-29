@@ -18,7 +18,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
     <div className="flex h-screen bg-gray-50">
       <Sidebar collapsed={sidebarCollapsed} onToggle={toggleSidebar} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <main className="flex-1 overflow-auto bg-gray-50">
+        <main className="flex-1 overflow-hidden bg-gray-50">
           <div className="h-full">
             {children}
           </div>

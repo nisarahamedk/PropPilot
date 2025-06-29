@@ -17,7 +17,8 @@ interface Message {
 export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
-  const scrollAreaRef = useRef<HTMLDivElement>(null); // Corrected type for ScrollArea ref if needed based on actual ScrollArea component
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleSendMessage = () => {
     if (inputValue.trim() === '') return;
@@ -45,35 +46,17 @@ export default function ChatInterface() {
   };
 
   useEffect(() => {
-    // Auto-scroll to bottom
-    // The ref for shadcn/ui ScrollArea might point to the root element.
-    // Accessing the viewport requires finding the specific DOM element.
-    // This implementation assumes direct manipulation, which might need adjustment
-    // if ScrollArea exposes a more specific API for scrolling.
-    if (scrollAreaRef.current) {
-      const viewport = scrollAreaRef.current.querySelector('div[data-radix-scroll-area-viewport]');
-      if (viewport) {
-        viewport.scrollTop = viewport.scrollHeight;
-      } else {
-        // Fallback for simpler structures or if the viewport selector is not found
-        scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
-      }
-    }
+    // Auto-scroll to bottom using the messages end ref
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   return (
-    <Card className="w-full h-[600px] flex flex-col">
-      <CardHeader className="border-b">
+    <Card className="w-full h-full flex flex-col">
+      <CardHeader className="border-b flex-shrink-0">
         <h2 className="text-xl font-semibold">PropPilot Chat</h2>
       </CardHeader>
-      <CardContent className="flex-grow p-0">
-        {/* The ScrollArea component from shadcn/ui typically does not take a ref directly like a simple div.
-            It forwards its ref to the underlying Radix component.
-            The ref type might be `React.ElementRef<typeof ScrollAreaPrimitive.Root>`
-            For controlling scroll, you might need to interact with the viewport child.
-            The current `scrollAreaRef` type is HTMLDivElement, which is okay for the outer element.
-         */}
-        <ScrollArea className="h-full p-4" ref={scrollAreaRef as React.RefObject<HTMLDivElement>}>
+      <CardContent className="flex-1 p-0 overflow-hidden">
+        <ScrollArea className="h-full p-4">
           <div className="space-y-4">
             {messages.map((msg) => (
               <div
@@ -110,10 +93,11 @@ export default function ChatInterface() {
                 )}
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
       </CardContent>
-      <CardFooter className="border-t p-4">
+      <CardFooter className="border-t p-4 flex-shrink-0">
         <div className="flex w-full items-center space-x-2">
           <Input
             type="text"
